@@ -6,39 +6,42 @@
 
 static uint8_t image_buffer[BUFFER_LENGTH];
 
-// void LCD_Set_Pixel(const uint16_t x, const uint16_t y, uint8_t colour) {
-//     uint16_t index = ST7789V2_HEIGHT*y + x;
-//     if (index&1) {
-//         image_buffer[index] = colour << 4 + image_buffer[index] & 0x0F;
-//     }
-//     else {
-//         image_buffer[index] = colour + image_buffer[index] & 0xF0;
-//     }
-// }
+static const uint16_t colour_map[16] = {
+    LCD_COLOUR_0,
+    LCD_COLOUR_1,
+    LCD_COLOUR_2,
+    LCD_COLOUR_3,
+    LCD_COLOUR_4,
+    LCD_COLOUR_5,
+    LCD_COLOUR_6,
+    LCD_COLOUR_7,
+    LCD_COLOUR_8,
+    LCD_COLOUR_9,
+    LCD_COLOUR_10,
+    LCD_COLOUR_11,
+    LCD_COLOUR_12,
+    LCD_COLOUR_13,
+    LCD_COLOUR_14,
+    LCD_COLOUR_15
+};
+
+uint16_t LCD_Map_Pixel(uint8_t pixel) {
+    return colour_map[pixel];
+}
+
+void LCD_Set_Pixel(const uint16_t x, const uint16_t y, uint8_t colour) {
+    uint16_t index = (ST7789V2_WIDTH*y + x) / 2;
+    if (x&1) {
+        image_buffer[index] = (colour << 4) + (image_buffer[index] & 0x0F);
+    }
+    else {
+        image_buffer[index] = colour + (image_buffer[index] & 0xF0);
+    }
+}
 
 void LCD_Fill_Buffer(uint8_t colour) {
     for (int i = 0; i < BUFFER_LENGTH; i++) {
         image_buffer[i] = colour + (colour << 4);
-    }
-}
-
-uint16_t LCD_Map_Pixel(uint8_t pixel) {
-    switch (pixel) {
-        case 0:
-            return 0x0000;
-            break;
-        case 1:
-            return 0xF800;
-            break;
-        case 2:
-            return 0x07E0;
-            break;
-        case 3:
-            return 0x001F;
-            break;
-        default:
-            return 0xFFFF;
-            break;
     }
 }
 
@@ -59,10 +62,70 @@ void LCD_Refresh(ST7789V2_cfg_t* cfg) {
     }
 }
 
-void LCD_Set_Pixel(const uint16_t x, const uint16_t y, uint16_t colour) {
-    image_buffer[2*(ST7789V2_HEIGHT*y + x)] = colour >> 8;
-    image_buffer[2*(ST7789V2_HEIGHT*y + x) + 1] = colour & 0xFF;
+void LCD_Draw_Line(const uint16_t x0, const uint16_t y0, const uint16_t x1, const uint16_t y1, uint8_t colour) {
+    
+    // Note that the ranges can be negative so we have to turn the input values into signed integers first
+    const int16_t y_range = (int)y1 - (int)y0;
+    const int16_t x_range = (int)x1 - (int)x0;;
+
+    // if dotted line, set step to 2, else step is 1
+    // const uint16_t step = (type==2) ? 2:1;
+    uint16_t step = 1;
+
+    // make sure we loop over the largest range to get the most pixels on the display
+    // for instance, if drawing a vertical line (x_range = 0), we need to loop down the y pixels
+    // or else we'll only end up with 1 pixel in the x column
+    if ( abs(x_range) > abs(y_range) ) {
+
+        // ensure we loop from smallest to largest or else for-loop won't run as expected
+        const uint16_t start = x_range > 0 ? x0:x1;
+        const uint16_t stop =  x_range > 0 ? x1:x0;
+
+        // loop between x pixels
+        for (unsigned int x = start; x<= stop ; x+=step) {  // do linear interpolation
+            const int16_t dx = (int)x - (int)x0;
+            const uint16_t y = y0 + y_range * dx / x_range;
+
+            // If the line type is '0', this will clear the pixel
+            // If it is '1' or '2', the pixel will be set
+            LCD_Set_Pixel(x, y, colour);
+        }
+
+    } else {
+
+        // ensure we loop from smallest to largest or else for-loop won't run as expected
+        const uint16_t start = y_range > 0 ? y0:y1;
+        const uint16_t stop =  y_range > 0 ? y1:y0;
+
+        for (unsigned int y = start; y<= stop ; y+=step) {  // do linear interpolation
+            const int16_t dy = (int)y - (int)y0;;
+            const uint16_t x = x0 + x_range * dy / y_range;
+
+            // If the line type is '0', this will clear the pixel
+            // If it is '1' or '2', the pixel will be set
+            LCD_Set_Pixel(x, y, colour);
+        }
+    }
 }
+
+void LCD_Draw_Rect(const uint16_t x0, const uint16_t y0, const uint16_t width, const uint16_t height, uint8_t colour, uint8_t fill) {
+    if (fill) {
+        for (int y = y0; y<y0+height; y++) {
+            LCD_Draw_Line(x0, y, x0+(width-1), y, colour);
+        }
+    }
+    else {
+        LCD_Draw_Line(x0, y0, x0+(width-1), y0, colour);
+        LCD_Draw_Line(x0, y0+(height-1), x0+(width-1), y0+(height-1), colour);
+        LCD_Draw_Line(x0, y0, x0, y0+(height-1), colour);
+        LCD_Draw_Line(x0+(width-1), y0, x0+(width-1), y0+(height-1), colour);
+    }
+}
+
+// void LCD_Set_Pixel(const uint16_t x, const uint16_t y, uint16_t colour) {
+//     image_buffer[2*(ST7789V2_HEIGHT*y + x)] = colour >> 8;
+//     image_buffer[2*(ST7789V2_HEIGHT*y + x) + 1] = colour & 0xFF;
+// }
 
 // void LCD_Fill_Buffer(ST7789V2_cfg_t* cfg, uint16_t colour) {
 //     uint8_t line_buffer[480];

@@ -2,6 +2,49 @@
 #define LCD_h
 
 #include "ST7789V2_Driver.h"
+#include <stdlib.h>
+
+// https://github.com/newdigate/rgb565_colors for more colours
+
+#define RGB565_BLACK      0x0000
+#define RGB565_WHITE      0xFFFF
+#define RGB565_RED        0xF800
+#define RGB565_GREEN      0x07E0
+#define RGB565_BLUE       0x001F
+#define RGB565_YELLOW     0xFFE0
+#define RGB565_CYAN       0x07FF
+#define RGB565_MAGENTA    0xF81F
+#define RGB565_GRAY       0x8410
+#define RGB565_LIGHT_GRAY 0xC618
+#define RGB565_DARK_GRAY  0x4208
+#define RGB565_ORANGE     0xFD20
+#define RGB565_BROWN      0xA145
+#define RGB565_PINK       0xFC18
+#define RGB565_PURPLE     0x780F
+#define RGB565_TEAL       0x0438
+#define RGB565_NAVY       0x000F
+#define RGB565_MAROON     0x8000
+#define RGB565_OLIVE      0x8400
+#define RGB565_SKY_BLUE   0x867D
+#define RGB565_GOLD       0xFEA0
+#define RGB565_VIOLET     0x915C
+
+#define LCD_COLOUR_0  RGB565_BLACK
+#define LCD_COLOUR_1  RGB565_WHITE
+#define LCD_COLOUR_2  RGB565_RED
+#define LCD_COLOUR_3  RGB565_GREEN
+#define LCD_COLOUR_4  RGB565_BLUE
+#define LCD_COLOUR_5  RGB565_ORANGE
+#define LCD_COLOUR_6  RGB565_YELLOW
+#define LCD_COLOUR_7  RGB565_PINK
+#define LCD_COLOUR_8  RGB565_PURPLE
+#define LCD_COLOUR_9  RGB565_NAVY
+#define LCD_COLOUR_10 RGB565_GOLD
+#define LCD_COLOUR_11 RGB565_VIOLET
+#define LCD_COLOUR_12 RGB565_BROWN
+#define LCD_COLOUR_13 RGB565_GRAY
+#define LCD_COLOUR_14 RGB565_CYAN
+#define LCD_COLOUR_15 RGB565_MAGENTA
 
 /* Initialise display
 *   Powers up the display and turns on backlight (50% brightness default).
@@ -53,7 +96,7 @@ void LCD_printChar(char const c, unsigned int const x, unsigned int const y);
 *          The third parameter can be omitted*/
 void LCD_Set_Pixel(const uint16_t x,
             const uint16_t  y,
-            uint16_t colour);
+            uint8_t colour);
 
 /* Clear a Pixel
 *   @param  x - the x co-ordinate of the pixel (0 to 83)
@@ -105,8 +148,8 @@ void LCD_plotArray(float const array[]);
 *   @param  y0 - y-coordinate of first point
 *   @param  x1 - x-coordinate of last point
 *   @param  y1 - y-coordinate of last point
-*   @param  type - 0 white,1 black,2 dotted*/
-void LCD_drawLine(unsigned int const x0, unsigned int const y0, unsigned int const x1, unsigned int const y1, unsigned int const type);
+*   @param  colour - 4-bit colour*/
+void LCD_Draw_Line(const uint16_t x0, const uint16_t y0, const uint16_t x1, const uint16_t y1, uint8_t colour);
 
 /* Draw Rectangle
 *   This function draws a rectangle.
@@ -115,7 +158,7 @@ void LCD_drawLine(unsigned int const x0, unsigned int const y0, unsigned int con
 *   @param  width - width of rectangle
 *   @param  height - height of rectangle
 *   @param  fill   - fill-type for the shape*/
-// void LCD_drawRect(unsigned int const x0, unsigned int const y0, unsigned int const width, unsigned int const height, FillType const fill);
+void LCD_Draw_Rect(const uint16_t x0, const uint16_t y0, const uint16_t width, const uint16_t height, uint8_t colour, uint8_t fill);
 
 /* Draw Sprite
 *   This function draws a sprite as defined in a 2D array
