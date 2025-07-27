@@ -46,11 +46,11 @@ void LCD_Fill_Buffer(uint8_t colour) {
 }
 
 void LCD_Refresh(ST7789V2_cfg_t* cfg) {
-    uint8_t line_buffer0[480]; // 240 * 2 Bytes
-    uint8_t line_buffer1[480]; // 240 * 2 Bytes
+    uint8_t line_buffer0[4*480]; // 240 * 2 Bytes * 4 rows
+    uint8_t line_buffer1[4*480]; // 240 * 2 Bytes * 4 rows
     ST7789V2_Send_Command(cfg, 0x2C);
-    for (int i = 0; i < 140; i++) {
-        for (int j = 0; j < 120; j++) {
+    for (int i = 0; i < 35; i++) {
+        for (int j = 0; j < 480; j++) {
             uint8_t double_pixel = image_buffer[120 * (2*i) + j];
             uint16_t pixel = LCD_Map_Pixel(double_pixel >> 4);
             line_buffer0[4*j] = pixel >> 8;
@@ -62,21 +62,21 @@ void LCD_Refresh(ST7789V2_cfg_t* cfg) {
         while(HAL_SPI_GetState(cfg->spi) != HAL_SPI_STATE_READY) {
             ;
         }
-        ST7789V2_Send_Data_Block(cfg, line_buffer0, 480);
+        ST7789V2_Send_Data_Block(cfg, line_buffer0, 480*4);
         
-        for (int j = 0; j < 120; j++) {
+        for (int j = 0; j < 480; j++) {
             uint8_t double_pixel = image_buffer[120 * (2*i+1) + j];
             uint16_t pixel = LCD_Map_Pixel(double_pixel >> 4);
-            line_buffer0[4*j] = pixel >> 8;
-            line_buffer0[4*j + 1] = pixel & 0xFF;
+            line_buffer1[4*j] = pixel >> 8;
+            line_buffer1[4*j + 1] = pixel & 0xFF;
             pixel = LCD_Map_Pixel(double_pixel & 0x0F);
-            line_buffer0[4*j + 2] = pixel >> 8;
-            line_buffer0[4*j + 3] = pixel & 0xFF;
+            line_buffer1[4*j + 2] = pixel >> 8;
+            line_buffer1[4*j + 3] = pixel & 0xFF;
         }
         while(HAL_SPI_GetState(cfg->spi) != HAL_SPI_STATE_READY) {
             ;
         }
-        ST7789V2_Send_Data_Block(cfg, line_buffer0, 480);
+        ST7789V2_Send_Data_Block(cfg, line_buffer1, 480*4);
 
     }
 }
