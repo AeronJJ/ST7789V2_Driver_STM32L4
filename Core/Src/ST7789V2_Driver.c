@@ -91,11 +91,11 @@ void ST7789V2_Send_Data_Block(ST7789V2_cfg_t* cfg, uint8_t* data, uint32_t lengt
     // Assert CS
     HAL_GPIO_WritePin(cfg->port_CS, cfg->pin_CS, GPIO_PIN_RESET);
 
-    // Set DC 0
-    HAL_GPIO_WritePin(cfg->port_DC, cfg->pin_DC, GPIO_PIN_RESET);
+    // Set DC 1
+    HAL_GPIO_WritePin(cfg->port_DC, cfg->pin_DC, GPIO_PIN_SET);
 
     // Send command
-    HAL_SPI_Transmit(&cfg->spi, (uint8_t*)&data, length, HAL_MAX_DELAY);
+    HAL_SPI_Transmit(&cfg->spi, data, length, HAL_MAX_DELAY);
 
     // Deassert CS
     HAL_GPIO_WritePin(cfg->port_CS, cfg->pin_CS, GPIO_PIN_SET);

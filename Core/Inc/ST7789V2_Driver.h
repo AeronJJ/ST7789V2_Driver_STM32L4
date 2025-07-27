@@ -59,11 +59,22 @@
 
 #define ST7789_ROTATION 2	
 
+#define ST7789V2_WIDTH 240
+
+#define ST7789V2_HEIGHT 280
+
+typedef struct GPIO_Pin_struct {
+    GPIO_TypeDef* port;
+    uint16_t pin;
+} GPIO_Pin_t;
+
+
 typedef struct ST7789V2_cfg_struct {
     uint8_t setup_done;
     SPI_HandleTypeDef spi;
     GPIO_TypeDef *port_RST, *port_BL, *port_DC, *port_CS, *port_MOSI, *port_SCLK;
     uint16_t pin_RST, pin_BL, pin_DC, pin_CS, pin_MOSI, pin_SCLK;
+    GPIO_Pin_t RST, BL, DC, CS, MOSI, SCLK;
 } ST7789V2_cfg_t;
 
 void ST7789V2_Init(ST7789V2_cfg_t* cfg);
