@@ -1,3 +1,6 @@
+#ifndef ST7789V2_Driver_h
+#define ST7789V2_Driver_h
+
 #include "spi.h"
 #include "gpio.h"
 #include "stm32l4xx_hal.h"
@@ -56,20 +59,29 @@
 
 #define ST7789_ROTATION 2	
 
-void ST7789V2_Init(GPIO_TypeDef* port_RST, uint16_t pin_RST, GPIO_TypeDef* port_BL, uint16_t pin_BL, GPIO_TypeDef* port_DC, uint16_t pin_DC, GPIO_TypeDef* port_CS, uint16_t pin_CS, GPIO_TypeDef* port_MOSI, uint16_t pin_MOSI, GPIO_TypeDef* port_SCLK, uint16_t pin_SCLK);
+typedef struct ST7789V2_cfg_struct {
+    uint8_t setup_done;
+    SPI_HandleTypeDef spi;
+    GPIO_TypeDef *port_RST, *port_BL, *port_DC, *port_CS, *port_MOSI, *port_SCLK;
+    uint16_t pin_RST, pin_BL, pin_DC, pin_CS, pin_MOSI, pin_SCLK;
+} ST7789V2_cfg_t;
 
-void ST7789V2_Reset();
+void ST7789V2_Init(ST7789V2_cfg_t* cfg);
 
-void ST7789V2_Send_Command(uint8_t command);
+void ST7789V2_Reset(ST7789V2_cfg_t* cfg);
 
-void ST7789V2_Send_Data(uint8_t data);
+void ST7789V2_Send_Command(ST7789V2_cfg_t* cfg, uint8_t command);
 
-void ST7789V2_Send_Data_Block(uint8_t* data, uint32_t length);
+void ST7789V2_Send_Data(ST7789V2_cfg_t* cfg, uint8_t data);
 
-void ST7789V2_Set_Address_Window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+void ST7789V2_Send_Data_Block(ST7789V2_cfg_t* cfg, uint8_t* data, uint32_t length);
 
-void ST7789V2_Clear_RAM();
+void ST7789V2_Set_Address_Window(ST7789V2_cfg_t* cfg, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 
-void ST7789V2_BL_On();
+void ST7789V2_Clear_RAM(ST7789V2_cfg_t* cfg);
 
-void ST7789V2_BL_Off();
+void ST7789V2_BL_On(ST7789V2_cfg_t* cfg);
+
+void ST7789V2_BL_Off(ST7789V2_cfg_t* cfg);
+
+#endif
