@@ -71,7 +71,7 @@ typedef struct GPIO_Pin_struct {
 
 typedef struct ST7789V2_cfg_struct {
     uint8_t setup_done;
-    SPI_HandleTypeDef spi;
+    SPI_HandleTypeDef *spi;
     GPIO_TypeDef *port_RST, *port_BL, *port_DC, *port_CS, *port_MOSI, *port_SCLK;
     uint16_t pin_RST, pin_BL, pin_DC, pin_CS, pin_MOSI, pin_SCLK;
     GPIO_Pin_t RST, BL, DC, CS, MOSI, SCLK;

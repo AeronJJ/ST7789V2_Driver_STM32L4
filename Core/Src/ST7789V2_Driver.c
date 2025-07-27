@@ -1,4 +1,6 @@
 #include "ST7789V2_Driver.h"
+#include <usart.h>
+#include <string.h>
 
 // Needs RST Pin, BL Pin, DC Pin, CS Pin, MOSI Pin, SCLK Pin, 
 void ST7789V2_Init(ST7789V2_cfg_t* cfg) {
@@ -63,7 +65,7 @@ void ST7789V2_Send_Command(ST7789V2_cfg_t* cfg, uint8_t command) {
     HAL_GPIO_WritePin(cfg->port_DC, cfg->pin_DC, GPIO_PIN_RESET);
 
     // Send command
-    HAL_SPI_Transmit(&cfg->spi, (uint8_t*)&command, 1, HAL_MAX_DELAY);
+    HAL_SPI_Transmit(cfg->spi, (uint8_t*)&command, 1, HAL_MAX_DELAY);
 
     // Deassert CS
     HAL_GPIO_WritePin(cfg->port_CS, cfg->pin_CS, GPIO_PIN_SET);
@@ -79,11 +81,31 @@ void ST7789V2_Send_Data(ST7789V2_cfg_t* cfg, uint8_t data) {
     HAL_GPIO_WritePin(cfg->port_DC, cfg->pin_DC, GPIO_PIN_SET);
 
     // Send command
-    HAL_SPI_Transmit(&cfg->spi, (uint8_t*)&data, 1, HAL_MAX_DELAY);
+    HAL_SPI_Transmit(cfg->spi, (uint8_t*)&data, 1, HAL_MAX_DELAY);
 
     // Deassert CS
     HAL_GPIO_WritePin(cfg->port_CS, cfg->pin_CS, GPIO_PIN_SET);
   }
+}
+
+void Print_SPI_State(SPI_HandleTypeDef *hspi, UART_HandleTypeDef *huart) {
+    HAL_SPI_StateTypeDef state = HAL_SPI_GetState(hspi);
+    char *state_str;
+
+    switch (state) {
+        case HAL_SPI_STATE_RESET:      state_str = "RESET"; break;
+        case HAL_SPI_STATE_READY:      state_str = "READY"; break;
+        case HAL_SPI_STATE_BUSY:       state_str = "BUSY"; break;
+        case HAL_SPI_STATE_BUSY_TX:    state_str = "BUSY_TX"; break;
+        case HAL_SPI_STATE_BUSY_RX:    state_str = "BUSY_RX"; break;
+        case HAL_SPI_STATE_BUSY_TX_RX: state_str = "BUSY_TX_RX"; break;
+        case HAL_SPI_STATE_ERROR:      state_str = "ERROR"; break;
+        default:                       state_str = "UNKNOWN"; break;
+    }
+
+    char msg[64];
+    snprintf(msg, sizeof(msg), "SPI State: %s\r\n", state_str);
+    HAL_UART_Transmit(huart, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
 }
 
 void ST7789V2_Send_Data_Block(ST7789V2_cfg_t* cfg, uint8_t* data, uint32_t length) {
@@ -95,10 +117,19 @@ void ST7789V2_Send_Data_Block(ST7789V2_cfg_t* cfg, uint8_t* data, uint32_t lengt
     HAL_GPIO_WritePin(cfg->port_DC, cfg->pin_DC, GPIO_PIN_SET);
 
     // Send command
-    HAL_SPI_Transmit(&cfg->spi, data, length, HAL_MAX_DELAY);
-
+    // HAL_SPI_Transmit(&cfg->spi, data, length, HAL_MAX_DELAY);
+    HAL_SPI_Transmit_DMA(cfg->spi, data, length);
+    char msg[] = "Waiting for DMA to finish...\r\n";
+    char msg1[] = "DMA finished.\r\n";
+    //while(HAL_DMA_GetState(cfg->spi.hdmatx) != HAL_DMA_STATE_READY) {
+    // HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+    while(HAL_SPI_GetState(cfg->spi) != HAL_SPI_STATE_READY) {
+      //HAL_UART_Transmit(&huart2, HAL_DMA_GetState(cfg->spi.hdmatx), sizeof(HAL_DMA_STATE_READY), HAL_MAX_DELAY);
+      //Print_SPI_State(cfg->spi, &huart2);
+    }
+    // HAL_UART_Transmit(&huart2, (uint8_t *)msg1, strlen(msg), HAL_MAX_DELAY);
     // Deassert CS
-    HAL_GPIO_WritePin(cfg->port_CS, cfg->pin_CS, GPIO_PIN_SET);
+    //HAL_GPIO_WritePin(cfg->port_CS, cfg->pin_CS, GPIO_PIN_SET);
   }
 }
 
