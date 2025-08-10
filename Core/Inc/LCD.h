@@ -3,8 +3,6 @@
 
 #include "ST7789V2_Driver.h"
 #include <stdlib.h>
-#include "spi.h"
-#include "usart.h"
 
 // https://github.com/newdigate/rgb565_colors for more colours
 

@@ -1,55 +1,16 @@
 #include "ST7789V2_Driver.h"
-#include <usart.h>
-#include <string.h>
 
-void Print_SPI2_DMA_Registers_int(void) {
-    char msg[128];
-    int len;
-
-    // SPI2 Registers
-    len = snprintf(msg, sizeof(msg), "\r\n--- SPI2 Registers ---\r\n");
-    HAL_UART_Transmit(&huart2, (uint8_t *)msg, len, HAL_MAX_DELAY);
-
-    len = snprintf(msg, sizeof(msg), "CR1  = 0x%08lX\r\n", SPI2->CR1);
-    HAL_UART_Transmit(&huart2, (uint8_t *)msg, len, HAL_MAX_DELAY);
-
-    len = snprintf(msg, sizeof(msg), "CR2  = 0x%08lX\r\n", SPI2->CR2);
-    HAL_UART_Transmit(&huart2, (uint8_t *)msg, len, HAL_MAX_DELAY);
-
-    len = snprintf(msg, sizeof(msg), "SR   = 0x%08lX\r\n", SPI2->SR);
-    HAL_UART_Transmit(&huart2, (uint8_t *)msg, len, HAL_MAX_DELAY);
-
-    // DMA Registers for SPI2 TX
-    DMA_Channel_TypeDef *dma = DMA1_Channel5;
-
-    len = snprintf(msg, sizeof(msg), "\r\n--- DMA (SPI2 TX) Registers ---\r\n");
-    HAL_UART_Transmit(&huart2, (uint8_t *)msg, len, HAL_MAX_DELAY);
-
-    len = snprintf(msg, sizeof(msg), "CCR   = 0x%08lX\r\n", dma->CCR);
-    HAL_UART_Transmit(&huart2, (uint8_t *)msg, len, HAL_MAX_DELAY);
-
-    len = snprintf(msg, sizeof(msg), "CNDTR = 0x%08lX\r\n", dma->CNDTR);  // Number of data to transfer
-    HAL_UART_Transmit(&huart2, (uint8_t *)msg, len, HAL_MAX_DELAY);
-
-    len = snprintf(msg, sizeof(msg), "CPAR  = 0x%08lX\r\n", dma->CPAR);   // Peripheral address
-    HAL_UART_Transmit(&huart2, (uint8_t *)msg, len, HAL_MAX_DELAY);
-
-    len = snprintf(msg, sizeof(msg), "CMAR  = 0x%08lX\r\n", dma->CMAR);   // Memory address
-    HAL_UART_Transmit(&huart2, (uint8_t *)msg, len, HAL_MAX_DELAY);
-
-    // Optional: DMA Interrupt Status (from DMA1 or DMA2)
-    len = snprintf(msg, sizeof(msg), "\r\n--- DMA Interrupt Flags (DMA1->ISR) ---\r\n");
-    HAL_UART_Transmit(&huart2, (uint8_t *)msg, len, HAL_MAX_DELAY);
-
-    len = snprintf(msg, sizeof(msg), "ISR   = 0x%08lX\r\n", DMA1->ISR);
-    HAL_UART_Transmit(&huart2, (uint8_t *)msg, len, HAL_MAX_DELAY);
+void delay_ms_approx(uint16_t ms) {
+  // Crude ms delay function, use hal for more accurate timing functions
+  for (int i = 0; i < 5714*ms; i++) {
+    __asm("nop");
+  }
 }
 
 void gpio_write(GPIO_Pin_t gpio, uint8_t val) {
   gpio.port->BSRR = gpio.pin << (val ? GPIO_SET_LSB : GPIO_RESET_LSB);
 }
 
-// Needs RST Pin, BL Pin, DC Pin, CS Pin, MOSI Pin, SCLK Pin, 
 void ST7789V2_Init(ST7789V2_cfg_t* cfg) {
   gpio_init(cfg);
   spi_init(cfg);
@@ -62,36 +23,34 @@ void ST7789V2_Init(ST7789V2_cfg_t* cfg) {
 
   ST7789V2_Send_Command(cfg, ST7789_SLPOUT);
 
-  HAL_Delay(50); // Wait for sleep out to propagate
+  // Wait for sleep out to propagate
+  delay_ms_approx(50);
 
   ST7789V2_Send_Command(cfg, ST7789_COLMOD);
   ST7789V2_Send_Data(cfg, 0x55);
 
-  HAL_Delay(10);
+  delay_ms_approx(10);
 
   ST7789V2_Send_Command(cfg, ST7789_MADCTL);
   ST7789V2_Send_Data(cfg, 0x00);
 
   ST7789V2_Send_Command(cfg, ST7789_INVON);
-  HAL_Delay(10);
+  delay_ms_approx(10);
 
   ST7789V2_Send_Command(cfg, ST7789_NORON);
-  HAL_Delay(10);
+  delay_ms_approx(10);
 
   ST7789V2_Set_Address_Window(cfg, 0, 20, 239, 299); 
 
   ST7789V2_Send_Command(cfg, 0x29);
-  HAL_Delay(10);
+  delay_ms_approx(10);
 }
 
 void ST7789V2_Reset(ST7789V2_cfg_t* cfg) {
-  if (cfg->setup_done) {
-    // Assert chip select
-    // gpio_write(cfg->CS, GPIO_PIN_RESET);
-    
+  if (cfg->setup_done) {    
     // Set reset low and wait
     gpio_write(cfg->RST, GPIO_PIN_RESET);
-    HAL_Delay(50);
+    delay_ms_approx(50);
 
     // Set reset high
     gpio_write(cfg->RST, GPIO_PIN_SET);
@@ -100,7 +59,7 @@ void ST7789V2_Reset(ST7789V2_cfg_t* cfg) {
     ST7789V2_Send_Command(cfg, ST7789_SWRESET);
 
     // Wait 120ms after resetting before sleep out
-    HAL_Delay(150);
+    delay_ms_approx(150);  
   }
 }
 
@@ -109,34 +68,21 @@ void ST7789V2_Send_Command(ST7789V2_cfg_t* cfg, uint8_t command) {
     // Deassert CS
     gpio_write(cfg->CS, GPIO_PIN_SET);
 
-    // Assert CS
-    // gpio_write(cfg->CS, GPIO_PIN_RESET);
-
     // Set DC 0
     gpio_write(cfg->DC, GPIO_PIN_RESET);
 
     // Send command
     spi_transmit_byte(cfg, command);
-
-    // Deassert CS
-    // gpio_write(cfg->CS, GPIO_PIN_SET);
   }
 }
 
 void ST7789V2_Send_Data(ST7789V2_cfg_t* cfg, uint8_t data) {
   if (cfg->setup_done) {
-    // Assert CS
-    // GPIOB->BSRR = 0x10000000;
-    // gpio_write(cfg->CS, GPIO_PIN_RESET);
-
     // Set DC 1
     gpio_write(cfg->DC, GPIO_PIN_SET);
 
     // Send command
     spi_transmit_byte(cfg, data);
-
-    // Deassert CS
-    // gpio_write(cfg->CS, GPIO_PIN_SET);
   }
 }
 
@@ -194,8 +140,7 @@ void ST7789V2_Fill(ST7789V2_cfg_t* cfg, uint16_t* colour, uint32_t len) {
 }
 
 void gpio_init(ST7789V2_cfg_t* cfg) {
-  // __HAL_RCC_GPIOB_CLK_ENABLE();
-  RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;     // GPIOB for SPI2 pins
+  RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN; // GPIOB for SPI2 pins
 
   GPIOB->MODER = 0xB97FFFD7;
   GPIOB->OTYPER = 0x00000000;
@@ -207,8 +152,6 @@ void gpio_init(ST7789V2_cfg_t* cfg) {
 void spi_init(ST7789V2_cfg_t* cfg) {
   // Enable SPI clock
   RCC->APB1ENR1 |= RCC_APB1ENR1_SPI2EN;
-
-  // cfg->spi->Instance = SPI2;
 
   // Disable SPI
   cfg->spi->CR1 &= ~SPI_CR1_SPE;
@@ -428,17 +371,4 @@ void spi_transmit_dma_16bit_noinc(ST7789V2_cfg_t* cfg, uint16_t* data, uint16_t 
 
   // Enable DMA channel (starts transfer)
   cfg->dma.channel->CCR |= DMA_CCR_EN;
-}
-
-void uart_println(const char *fmt, ...) {
-    char line[128]; // Adjust size as needed
-    va_list args;
-
-    va_start(args, fmt);
-    vsnprintf(line, sizeof(line) - 3, fmt, args); // Leave room for \r\n\0
-    va_end(args);
-
-    strcat(line, "\r\n"); // Add newline (CRLF)
-
-    HAL_UART_Transmit(&huart2, (uint8_t *)line, strlen(line), HAL_MAX_DELAY);
 }

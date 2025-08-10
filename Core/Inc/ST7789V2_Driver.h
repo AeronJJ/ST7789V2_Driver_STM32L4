@@ -1,17 +1,8 @@
 #ifndef ST7789V2_Driver_h
 #define ST7789V2_Driver_h
 
-#include "spi.h"
-#include "gpio.h"
-#include "stm32l4xx_hal.h"
 #include <stm32l476xx.h>
-#include <stdint.h>
-#include "handwritten.h"
-
-#include "usart.h"
-#include <stdarg.h>
 #include <stdio.h>
-#include <string.h>
 
 /* Control Registers and constant codes */
 #define ST7789_NOP     0x00
@@ -81,6 +72,8 @@
 #define GPIO_PIN_SET 1
 #endif
 
+void delay_ms_approx(uint16_t ms);
+
 typedef struct GPIO_Pin_struct {
    GPIO_TypeDef* port;
    uint16_t pin;
@@ -126,7 +119,5 @@ void spi_transmit_byte(ST7789V2_cfg_t* cfg, uint8_t data);
 void spi_transmit_dma_8bit(ST7789V2_cfg_t* cfg, uint8_t* data, uint16_t len);
 void spi_transmit_dma_16bit(ST7789V2_cfg_t* cfg, uint16_t* data, uint16_t len);
 void spi_transmit_dma_16bit_noinc(ST7789V2_cfg_t* cfg, uint16_t* data, uint16_t len);
-
-void uart_println(const char *fmt, ...);
 
 #endif
