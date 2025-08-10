@@ -69,18 +69,35 @@
 
 #define ST7789V2_HEIGHT 280
 
+#define GPIO_SET_LSB 0
+
+#define GPIO_RESET_LSB 16
+
+#ifndef GPIO_PIN_RESET
+#define GPIO_PIN_RESET 0
+#endif
+
+#ifndef GPIO_PIN_SET
+#define GPIO_PIN_SET 1
+#endif
+
 typedef struct GPIO_Pin_struct {
-    GPIO_TypeDef* port;
-    uint16_t pin;
+   GPIO_TypeDef* port;
+   uint16_t pin;
 } GPIO_Pin_t;
 
+void gpio_write(GPIO_Pin_t gpio, uint8_t val);
+
+typedef struct DMA_Channel_Struct {
+   DMA_TypeDef *instance;
+   DMA_Channel_TypeDef *channel;
+} DMA_Channel_t;
 
 typedef struct ST7789V2_cfg_struct {
-    uint8_t setup_done;
-    SPI_TypeDef *spi;
-    GPIO_TypeDef *port_RST, *port_BL, *port_DC, *port_CS, *port_MOSI, *port_SCLK;
-    uint16_t pin_RST, pin_BL, pin_DC, pin_CS, pin_MOSI, pin_SCLK;
-    GPIO_Pin_t RST, BL, DC, CS, MOSI, SCLK;
+   uint8_t setup_done;
+   SPI_TypeDef *spi;
+   GPIO_Pin_t RST, BL, DC, CS, MOSI, SCLK;
+   DMA_Channel_t dma;
 } ST7789V2_cfg_t;
 
 void ST7789V2_Init(ST7789V2_cfg_t* cfg);
@@ -95,22 +112,20 @@ void ST7789V2_Send_Data_Block(ST7789V2_cfg_t* cfg, uint8_t* data, uint32_t lengt
 
 void ST7789V2_Set_Address_Window(ST7789V2_cfg_t* cfg, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 
-void ST7789V2_Clear_RAM(ST7789V2_cfg_t* cfg);
-
 void ST7789V2_BL_On(ST7789V2_cfg_t* cfg);
 
 void ST7789V2_BL_Off(ST7789V2_cfg_t* cfg);
+
+void ST7789V2_Fill(ST7789V2_cfg_t* cfg, uint16_t* colour, uint32_t len);
 
 
 void gpio_init(ST7789V2_cfg_t* cfg);
 void spi_init(ST7789V2_cfg_t* cfg);
 void dma_init(ST7789V2_cfg_t* cfg);
-void spi_set_8bit_mode(ST7789V2_cfg_t* cfg);
-void spi_set_16bit_mode(ST7789V2_cfg_t* cfg);
 void spi_transmit_byte(ST7789V2_cfg_t* cfg, uint8_t data);
 void spi_transmit_dma_8bit(ST7789V2_cfg_t* cfg, uint8_t* data, uint16_t len);
 void spi_transmit_dma_16bit(ST7789V2_cfg_t* cfg, uint16_t* data, uint16_t len);
-void spi_transmit_dma_16_bit_noinc(ST7789V2_cfg_t* cfg, uint16_t* data, uint16_t len);
+void spi_transmit_dma_16bit_noinc(ST7789V2_cfg_t* cfg, uint16_t* data, uint16_t len);
 
 void uart_println(const char *fmt, ...);
 
