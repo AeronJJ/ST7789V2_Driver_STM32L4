@@ -6,6 +6,12 @@
 #include "stm32l4xx_hal.h"
 #include <stm32l476xx.h>
 #include <stdint.h>
+#include "handwritten.h"
+
+#include "usart.h"
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
 
 /* Control Registers and constant codes */
 #define ST7789_NOP     0x00
@@ -71,7 +77,7 @@ typedef struct GPIO_Pin_struct {
 
 typedef struct ST7789V2_cfg_struct {
     uint8_t setup_done;
-    SPI_HandleTypeDef *spi;
+    SPI_TypeDef *spi;
     GPIO_TypeDef *port_RST, *port_BL, *port_DC, *port_CS, *port_MOSI, *port_SCLK;
     uint16_t pin_RST, pin_BL, pin_DC, pin_CS, pin_MOSI, pin_SCLK;
     GPIO_Pin_t RST, BL, DC, CS, MOSI, SCLK;
@@ -94,5 +100,18 @@ void ST7789V2_Clear_RAM(ST7789V2_cfg_t* cfg);
 void ST7789V2_BL_On(ST7789V2_cfg_t* cfg);
 
 void ST7789V2_BL_Off(ST7789V2_cfg_t* cfg);
+
+
+void gpio_init(ST7789V2_cfg_t* cfg);
+void spi_init(ST7789V2_cfg_t* cfg);
+void dma_init(ST7789V2_cfg_t* cfg);
+void spi_set_8bit_mode(ST7789V2_cfg_t* cfg);
+void spi_set_16bit_mode(ST7789V2_cfg_t* cfg);
+void spi_transmit_byte(ST7789V2_cfg_t* cfg, uint8_t data);
+void spi_transmit_dma_8bit(ST7789V2_cfg_t* cfg, uint8_t* data, uint16_t len);
+void spi_transmit_dma_16bit(ST7789V2_cfg_t* cfg, uint16_t* data, uint16_t len);
+void spi_transmit_dma_16_bit_noinc(ST7789V2_cfg_t* cfg, uint16_t* data, uint16_t len);
+
+void uart_println(const char *fmt, ...);
 
 #endif

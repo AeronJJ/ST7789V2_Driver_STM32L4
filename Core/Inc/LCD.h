@@ -3,6 +3,8 @@
 
 #include "ST7789V2_Driver.h"
 #include <stdlib.h>
+#include "spi.h"
+#include "usart.h"
 
 // https://github.com/newdigate/rgb565_colors for more colours
 
@@ -182,5 +184,13 @@ void LCD_sendData(unsigned char data);
 void LCD_Refresh(ST7789V2_cfg_t* cfg);
 // void LCD_Fill_Buffer(ST7789V2_cfg_t* cfg, uint16_t colour);
 void LCD_Fill_Buffer(uint8_t colour);
+
+void LCD_Fill(ST7789V2_cfg_t* cfg, const uint16_t x0, const uint16_t y0, const uint16_t x1, const uint16_t y1, const uint16_t colour);
+
+void ST7789_Init(ST7789V2_cfg_t* cfg);
+void ST7789_SendLine_DMA(ST7789V2_cfg_t* cfg, uint16_t x, uint16_t y, uint16_t *data, uint16_t len);
+void ST7789_SendSolidLine_DMA(ST7789V2_cfg_t* cfg, uint16_t x, uint16_t y, uint16_t pixel, uint16_t len);
+
+void Print_SPI2_DMA_Registers(void);
 
 #endif
