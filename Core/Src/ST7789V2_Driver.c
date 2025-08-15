@@ -104,6 +104,7 @@ void ST7789V2_Send_Data_Block(ST7789V2_cfg_t* cfg, uint8_t* data, uint32_t lengt
 }
 
 void ST7789V2_Set_Address_Window(ST7789V2_cfg_t* cfg, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
+  while (cfg->spi->SR & SPI_SR_BSY);
   ST7789V2_Send_Command(cfg, ST7789_CASET);
   ST7789V2_Send_Data(cfg, x0 >> 8);
   ST7789V2_Send_Data(cfg, x0 & 0xFF);

@@ -5,6 +5,7 @@
 
 
 static uint8_t image_buffer[BUFFER_LENGTH];
+static uint8_t track_changes[ST7789V2_HEIGHT];
 
 static const uint16_t colour_map[16] = {
     LCD_COLOUR_0,
@@ -47,6 +48,9 @@ void LCD_turnOn(ST7789V2_cfg_t* cfg) {
 
 void LCD_clear() {
   // Writes zeroes to frame buffer 32 bits at a time
+  for (int y = 0; y < ST7789V2_HEIGHT; y++) {
+    track_changes[y] = 1;
+  }
   for (int i = 0; i < BUFFER_LENGTH >> 2; i++) {
     ((uint32_t*)image_buffer)[i] = 0;
   }
@@ -107,22 +111,26 @@ uint16_t LCD_Map_Pixel(uint8_t pixel) {
 }
 
 void LCD_Set_Pixel(const uint16_t x, const uint16_t y, uint8_t colour) {
-    uint16_t index = (ST7789V2_WIDTH*y + x) / 2;
-    if (x&1) {
-        image_buffer[index] = (colour << 4) + (image_buffer[index] & 0x0F);
-    }
-    else {
-        image_buffer[index] = colour + (image_buffer[index] & 0xF0);
-    }
+  track_changes[y] = 1;
+  uint16_t index = (ST7789V2_WIDTH*y + x) / 2;
+  if (x&1) {
+    image_buffer[index] = (colour << 4) | (image_buffer[index] & 0x0F);
+  }
+  else {
+    image_buffer[index] = colour | (image_buffer[index] & 0xF0);
+  }
 }
 
 void LCD_Fill_Buffer(uint8_t colour) {
-    for (int i = 0; i < BUFFER_LENGTH; i++) {
-        image_buffer[i] = colour + (colour << 4);
-    }
+  for (int y = 0; y < ST7789V2_HEIGHT; y++) {
+    track_changes[y] = 1;
+  }
+  for (int i = 0; i < BUFFER_LENGTH; i++) {
+    image_buffer[i] = colour | (colour << 4);
+  }
 }
 
-#define lines_per_buffer 2
+#define lines_per_buffer 1
 // static const int lines_per_buffer = 1;
 static uint16_t line_buffer0[lines_per_buffer*240]; // 240 * 2 Bytes * n rows
 static uint16_t line_buffer1[lines_per_buffer*240]; // 240 * 2 Bytes * n rows
@@ -132,20 +140,30 @@ void LCD_Refresh(ST7789V2_cfg_t* cfg) {
   ST7789V2_Send_Command(cfg, 0x2C);
   for (int i = 0; i < (int)((280/2)/lines_per_buffer); i++) {
     // First line buffer
-    for (int j = 0; j < 120*lines_per_buffer; j++) {
-      uint8_t double_pixel = image_buffer[120 * (2*i*lines_per_buffer) + j];
-      line_buffer0[2*j] = colour_map[double_pixel >> 4];
-      line_buffer0[2*j+1] = colour_map[double_pixel & 0x0F];
+    if (track_changes[2*i]) {
+      track_changes[2*i] = 0;
+      for (int j = 0; j < 120*lines_per_buffer; j++) {
+        uint8_t double_pixel = image_buffer[120 * (2*i*lines_per_buffer) + j];
+        line_buffer0[2*j] = colour_map[double_pixel >> 4];
+        line_buffer0[2*j+1] = colour_map[double_pixel & 0x0F];
+      }
+      ST7789V2_Set_Address_Window(cfg, 0, 20 + 2*i, 239, 20 + 2*i); 
+      ST7789V2_Send_Command(cfg, 0x2C);
+      ST7789V2_Send_Data_Block(cfg, (uint8_t*) line_buffer0, (int)(480*lines_per_buffer));
     }
-    ST7789V2_Send_Data_Block(cfg, (uint8_t*) line_buffer0, (int)(480*lines_per_buffer));
 
     // Second line buffer
-    for (int j = 0; j < (int)(120*lines_per_buffer); j++) {
-      uint8_t double_pixel = image_buffer[120 * (2*i*lines_per_buffer+1) + j];
-      line_buffer1[2*j] = colour_map[double_pixel >> 4];
-      line_buffer1[2*j+1] = colour_map[double_pixel & 0x0F];
+    if (track_changes[2*i + 1]) {
+      track_changes[2*i + 1] = 0;
+      for (int j = 0; j < (int)(120*lines_per_buffer); j++) {
+        uint8_t double_pixel = image_buffer[120 * (2*i*lines_per_buffer+1) + j];
+        line_buffer1[2*j] = colour_map[double_pixel >> 4];
+        line_buffer1[2*j+1] = colour_map[double_pixel & 0x0F];
+      }
+      ST7789V2_Set_Address_Window(cfg, 0, 20 + (2*i+1), 239, 20 + (2*i+1)); 
+      ST7789V2_Send_Command(cfg, 0x2C);
+      ST7789V2_Send_Data_Block(cfg, (uint8_t*) line_buffer1, (int)(480*lines_per_buffer));
     }
-    ST7789V2_Send_Data_Block(cfg, (uint8_t*) line_buffer1, (int)(480*lines_per_buffer));
   }
 }
 
