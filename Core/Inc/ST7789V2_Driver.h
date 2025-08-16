@@ -64,13 +64,13 @@
 
 #define GPIO_RESET_LSB 16
 
-#ifndef GPIO_PIN_RESET
-#define GPIO_PIN_RESET 0
-#endif
+// #ifndef GPIO_PIN_RESET
+// #define GPIO_PIN_RESET 0
+// #endif
 
-#ifndef GPIO_PIN_SET
-#define GPIO_PIN_SET 1
-#endif
+// #ifndef GPIO_PIN_SET
+// #define GPIO_PIN_SET 1
+// #endif
 
 void delay_ms_approx(uint16_t ms);
 

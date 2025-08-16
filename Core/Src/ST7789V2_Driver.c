@@ -49,11 +49,11 @@ void ST7789V2_Init(ST7789V2_cfg_t* cfg) {
 void ST7789V2_Reset(ST7789V2_cfg_t* cfg) {
   if (cfg->setup_done) {    
     // Set reset low and wait
-    gpio_write(cfg->RST, GPIO_PIN_RESET);
+    gpio_write(cfg->RST, 0);
     delay_ms_approx(50);
 
     // Set reset high
-    gpio_write(cfg->RST, GPIO_PIN_SET);
+    gpio_write(cfg->RST, 1);
 
     // Software reset
     ST7789V2_Send_Command(cfg, ST7789_SWRESET);
@@ -66,10 +66,10 @@ void ST7789V2_Reset(ST7789V2_cfg_t* cfg) {
 void ST7789V2_Send_Command(ST7789V2_cfg_t* cfg, uint8_t command) {
   if (cfg->setup_done) {    
     // Deassert CS
-    gpio_write(cfg->CS, GPIO_PIN_SET);
+    gpio_write(cfg->CS, 1);
 
     // Set DC 0
-    gpio_write(cfg->DC, GPIO_PIN_RESET);
+    gpio_write(cfg->DC, 0);
 
     // Send command
     spi_transmit_byte(cfg, command);
@@ -79,7 +79,7 @@ void ST7789V2_Send_Command(ST7789V2_cfg_t* cfg, uint8_t command) {
 void ST7789V2_Send_Data(ST7789V2_cfg_t* cfg, uint8_t data) {
   if (cfg->setup_done) {
     // Set DC 1
-    gpio_write(cfg->DC, GPIO_PIN_SET);
+    gpio_write(cfg->DC, 1);
 
     // Send command
     spi_transmit_byte(cfg, data);
@@ -91,7 +91,7 @@ void ST7789V2_Send_Data_Block(ST7789V2_cfg_t* cfg, uint8_t* data, uint32_t lengt
     // CS control is done in dma transmit function
 
     // Set DC 1
-    gpio_write(cfg->DC, GPIO_PIN_SET);
+    gpio_write(cfg->DC, 1);
 
     // Wait for any previous transmissions to finish
     while(cfg->spi->SR & SPI_SR_BSY) {
@@ -121,11 +121,11 @@ void ST7789V2_Set_Address_Window(ST7789V2_cfg_t* cfg, uint16_t x0, uint16_t y0, 
 void ST7789V2_Clear_RAM(ST7789V2_cfg_t* cfg);
 
 void ST7789V2_BL_On(ST7789V2_cfg_t* cfg) {
-  gpio_write(cfg->BL, GPIO_PIN_SET);
+  gpio_write(cfg->BL, 1);
 }
 
 void ST7789V2_BL_Off(ST7789V2_cfg_t* cfg) {
-  gpio_write(cfg->BL, GPIO_PIN_RESET);
+  gpio_write(cfg->BL, 0);
 }
 
 void ST7789V2_Fill(ST7789V2_cfg_t* cfg, uint16_t* colour, uint32_t len) {
@@ -218,7 +218,7 @@ void spi_transmit_byte(ST7789V2_cfg_t* cfg, uint8_t data) {
   }
 
   // Assert CS
-  gpio_write(cfg->CS, GPIO_PIN_RESET);
+  gpio_write(cfg->CS, 0);
 
   // Write data
   *((__IO uint8_t*)&spi_inst->DR) = data;
@@ -227,15 +227,15 @@ void spi_transmit_byte(ST7789V2_cfg_t* cfg, uint8_t data) {
   while (spi_inst->SR & SPI_SR_BSY);
 
   // Deassert CS
-  gpio_write(cfg->CS, GPIO_PIN_SET);
+  gpio_write(cfg->CS, 1);
 }
 
 void spi_transmit_dma_8bit(ST7789V2_cfg_t* cfg, uint8_t* data, uint16_t len) {  
   // Deassert CS
-  gpio_write(cfg->CS, GPIO_PIN_SET);
+  gpio_write(cfg->CS, 1);
   
   // Set DC
-  gpio_write(cfg->DC, GPIO_PIN_SET);
+  gpio_write(cfg->DC, 1);
 
   // Clear interrupts
   uint32_t isr = DMA1->ISR;
@@ -271,7 +271,7 @@ void spi_transmit_dma_8bit(ST7789V2_cfg_t* cfg, uint8_t* data, uint16_t len) {
   spi_inst->CR1 |= SPI_CR1_SPE;
 
   // Assert CS
-  gpio_write(cfg->CS, GPIO_PIN_RESET);
+  gpio_write(cfg->CS, 0);
 
   // Enable DMA channel (starts transfer)
   cfg->dma.channel->CCR |= DMA_CCR_EN;
@@ -279,10 +279,10 @@ void spi_transmit_dma_8bit(ST7789V2_cfg_t* cfg, uint8_t* data, uint16_t len) {
 
 void spi_transmit_dma_16bit(ST7789V2_cfg_t* cfg, uint16_t* data, uint16_t len) {
   // Deassert CS
-  gpio_write(cfg->CS, GPIO_PIN_SET);
+  gpio_write(cfg->CS, 1);
   
   // Set DC
-  gpio_write(cfg->DC, GPIO_PIN_SET);
+  gpio_write(cfg->DC, 1);
 
   // Clear interrupts
   uint32_t isr = DMA1->ISR;
@@ -320,7 +320,7 @@ void spi_transmit_dma_16bit(ST7789V2_cfg_t* cfg, uint16_t* data, uint16_t len) {
   spi_inst->CR1 |= SPI_CR1_SPE;
 
   // Assert CS
-  gpio_write(cfg->CS, GPIO_PIN_RESET);
+  gpio_write(cfg->CS, 0);
 
   // Enable DMA channel (starts transfer)
   cfg->dma.channel->CCR |= DMA_CCR_EN;
@@ -328,10 +328,10 @@ void spi_transmit_dma_16bit(ST7789V2_cfg_t* cfg, uint16_t* data, uint16_t len) {
 
 void spi_transmit_dma_16bit_noinc(ST7789V2_cfg_t* cfg, uint16_t* data, uint16_t len) {
   // Deassert CS
-  gpio_write(cfg->CS, GPIO_PIN_SET);
+  gpio_write(cfg->CS, 1);
   
   // Set DC
-  gpio_write(cfg->DC, GPIO_PIN_SET);
+  gpio_write(cfg->DC, 1);
 
   // Clear interrupts
   uint32_t isr = DMA1->ISR;
@@ -368,7 +368,7 @@ void spi_transmit_dma_16bit_noinc(ST7789V2_cfg_t* cfg, uint16_t* data, uint16_t 
   spi_inst->CR1 |= SPI_CR1_SPE;
 
   // Assert CS
-  gpio_write(cfg->CS, GPIO_PIN_RESET);
+  gpio_write(cfg->CS, 0);
 
   // Enable DMA channel (starts transfer)
   cfg->dma.channel->CCR |= DMA_CCR_EN;

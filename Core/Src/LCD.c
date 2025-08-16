@@ -32,7 +32,7 @@ void LCD_init(ST7789V2_cfg_t* cfg) {
 
 void LCD_turnOff(ST7789V2_cfg_t* cfg) {
   // Backlight off
-  gpio_write(cfg->BL, GPIO_PIN_RESET);
+  gpio_write(cfg->BL, 0);
 
   // Display off
   ST7789V2_Send_Command(cfg, ST7789_DISPOFF);
@@ -40,7 +40,7 @@ void LCD_turnOff(ST7789V2_cfg_t* cfg) {
 
 void LCD_turnOn(ST7789V2_cfg_t* cfg) {
   // Backlight on
-  gpio_write(cfg->BL, GPIO_PIN_SET);
+  gpio_write(cfg->BL, 1);
 
   // Display on
   ST7789V2_Send_Command(cfg, ST7789_DISPON);
@@ -138,15 +138,22 @@ static uint16_t line_buffer1[lines_per_buffer*240]; // 240 * 2 Bytes * n rows
 void LCD_Refresh(ST7789V2_cfg_t* cfg) {
   ST7789V2_Set_Address_Window(cfg, 0, 20, 239, 299); 
   ST7789V2_Send_Command(cfg, 0x2C);
+
+  int buf = 0;
   for (int i = 0; i < (int)((280/2)/lines_per_buffer); i++) {
     // First line buffer
     if (track_changes[2*i]) {
+      if (!buf) {
+        while (cfg->spi->SR & SPI_SR_BSY);
+      }
+      buf = 0;
       track_changes[2*i] = 0;
       for (int j = 0; j < 120*lines_per_buffer; j++) {
         uint8_t double_pixel = image_buffer[120 * (2*i*lines_per_buffer) + j];
         line_buffer0[2*j] = colour_map[double_pixel >> 4];
         line_buffer0[2*j+1] = colour_map[double_pixel & 0x0F];
       }
+      
       ST7789V2_Set_Address_Window(cfg, 0, 20 + 2*i, 239, 20 + 2*i); 
       ST7789V2_Send_Command(cfg, 0x2C);
       ST7789V2_Send_Data_Block(cfg, (uint8_t*) line_buffer0, (int)(480*lines_per_buffer));
@@ -154,6 +161,10 @@ void LCD_Refresh(ST7789V2_cfg_t* cfg) {
 
     // Second line buffer
     if (track_changes[2*i + 1]) {
+      if (buf) {
+        while (cfg->spi->SR & SPI_SR_BSY);
+      }
+      buf = 1;
       track_changes[2*i + 1] = 0;
       for (int j = 0; j < (int)(120*lines_per_buffer); j++) {
         uint8_t double_pixel = image_buffer[120 * (2*i*lines_per_buffer+1) + j];
