@@ -151,7 +151,7 @@ void LCD_Draw_Rect(const uint16_t x0, const uint16_t y0, const uint16_t width, c
 *   @param  nrows - number of rows in sprite
 *   @param  ncols - number of columns in sprite
 *   @param  sprite - 2D array representing the sprite*/
-void LCD_Draw_Sprite(int x0, int y0, int nrows, int ncols, int *sprite);
+void LCD_Draw_Sprite(int x0, int y0, int nrows, int ncols, uint8_t *sprite);
 
 void LCD_setXYAddress(unsigned int const x,
                 unsigned int const y);

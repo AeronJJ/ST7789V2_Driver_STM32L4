@@ -275,13 +275,13 @@ void LCD_Draw_Rect(const uint16_t x0, const uint16_t y0, const uint16_t width, c
     }
 }
 
-void LCD_Draw_Sprite(int x0, int y0, int nrows, int ncols, int *sprite){
-    for (int i = 0; i < nrows; i++) {
-        for (int j = 0 ; j < ncols ; j++) {
-            int pixel = *((sprite+i*ncols)+j);
-            LCD_Set_Pixel(x0+j,y0+i, pixel);
-        }
+void LCD_Draw_Sprite(int x0, int y0, int nrows, int ncols, uint8_t *sprite){
+  for (int i = 0; i < nrows; i++) {
+    for (int j = 0 ; j < ncols ; j++) {
+      int pixel = *((sprite+i*ncols)+j);
+      LCD_Set_Pixel(x0+j,y0+i, pixel);
     }
+  }
 }
 
 uint16_t colour_ = 0x001F;
