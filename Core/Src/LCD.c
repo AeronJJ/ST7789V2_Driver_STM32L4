@@ -113,11 +113,13 @@ uint16_t LCD_Map_Pixel(uint8_t pixel) {
 void LCD_Set_Pixel(const uint16_t x, const uint16_t y, uint8_t colour) {
   track_changes[y] = 1;
   uint16_t index = (ST7789V2_WIDTH*y + x) / 2;
-  if (x&1) {
-    image_buffer[index] = (colour << 4) | (image_buffer[index] & 0x0F);
-  }
-  else {
-    image_buffer[index] = colour | (image_buffer[index] & 0xF0);
+  if (x < ST7789V2_WIDTH && y < ST7789V2_HEIGHT) {
+    if (x&1) {
+      image_buffer[index] = (colour << 4) | (image_buffer[index] & 0x0F);
+    }
+    else {
+      image_buffer[index] = colour | (image_buffer[index] & 0xF0);
+    }
   }
 }
 
@@ -178,6 +180,45 @@ void LCD_Refresh(ST7789V2_cfg_t* cfg) {
   }
 }
 
+void LCD_Draw_Circle(const uint16_t x0, const uint16_t y0, const uint16_t radius, uint8_t colour, uint8_t fill){
+
+  // from http://en.wikipedia.org/wiki/Midpoint_circle_algorithm
+  int x = radius;
+  int y = 0;
+  int radiusError = 1-x;
+
+  while(x >= y) {
+
+    // if transparent, just draw outline
+    if (!fill) {
+      LCD_Set_Pixel( x + x0,  y + y0, colour);
+      LCD_Set_Pixel(-x + x0,  y + y0, colour);
+      LCD_Set_Pixel( y + x0,  x + y0, colour);
+      LCD_Set_Pixel(-y + x0,  x + y0, colour);
+      LCD_Set_Pixel(-y + x0, -x + y0, colour);
+      LCD_Set_Pixel( y + x0, -x + y0, colour);
+      LCD_Set_Pixel( x + x0, -y + y0, colour);
+      LCD_Set_Pixel(-x + x0, -y + y0, colour);
+    } 
+    else {  
+      // drawing filled circle, so draw lines between points at same y value
+      LCD_Draw_Line(x+x0,y+y0, -x+x0,y+y0, colour);
+      LCD_Draw_Line(y+x0,x+y0, -y+x0,x+y0, colour);
+      LCD_Draw_Line(y+x0,-x+y0, -y+x0,-x+y0, colour);
+      LCD_Draw_Line(x+x0,-y+y0, -x+x0,-y+y0, colour);
+    }
+
+    y++;
+    if (radiusError<0) {
+      radiusError += 2 * y + 1;
+    } 
+    else {
+      x--;
+      radiusError += 2 * (y - x) + 1;
+    }
+  }
+}
+
 void LCD_Draw_Line(const uint16_t x0, const uint16_t y0, const uint16_t x1, const uint16_t y1, uint8_t colour) {
   // Note that the ranges can be negative so we have to turn the input values into signed integers first
   const int16_t y_range = (int)y1 - (int)y0;
@@ -231,6 +272,15 @@ void LCD_Draw_Rect(const uint16_t x0, const uint16_t y0, const uint16_t width, c
         LCD_Draw_Line(x0, y0+(height-1), x0+(width-1), y0+(height-1), colour);
         LCD_Draw_Line(x0, y0, x0, y0+(height-1), colour);
         LCD_Draw_Line(x0+(width-1), y0, x0+(width-1), y0+(height-1), colour);
+    }
+}
+
+void LCD_Draw_Sprite(int x0, int y0, int nrows, int ncols, int *sprite){
+    for (int i = 0; i < nrows; i++) {
+        for (int j = 0 ; j < ncols ; j++) {
+            int pixel = *((sprite+i*ncols)+j);
+            LCD_Set_Pixel(x0+j,y0+i, pixel);
+        }
     }
 }
 

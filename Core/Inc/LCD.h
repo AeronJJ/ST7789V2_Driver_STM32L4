@@ -124,7 +124,7 @@ void LCD_plotArray(float const array[]);
 *   @param  y0     - y-coordinate of centre
 *   @param  radius - radius of circle in pixels
 *   @param  fill   - fill-type for the shape*/
-// void LCD_drawCircle(unsigned int const x0, unsigned int const y0, unsigned int const radius, FillType const fill);
+void LCD_Draw_Circle(const uint16_t x0, const uint16_t y0, const uint16_t radius, uint8_t colour, uint8_t fill);
 
 /* Draw Line
 *   This function draws a line between the specified points using linear interpolation.
@@ -151,7 +151,7 @@ void LCD_Draw_Rect(const uint16_t x0, const uint16_t y0, const uint16_t width, c
 *   @param  nrows - number of rows in sprite
 *   @param  ncols - number of columns in sprite
 *   @param  sprite - 2D array representing the sprite*/
-void LCD_drawSprite(int x0, int y0, int nrows, int ncols, int *sprite);
+void LCD_Draw_Sprite(int x0, int y0, int nrows, int ncols, int *sprite);
 
 void LCD_setXYAddress(unsigned int const x,
                 unsigned int const y);
