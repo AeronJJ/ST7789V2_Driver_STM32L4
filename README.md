@@ -4,11 +4,11 @@
  - stm32l476xx.h and all sub-dependencies
 
 ## Setup
-If using STM32CubeMX to generate your project, add this repo to the root directory using:
+If you have used STM32CubeMX to generate a CMake project, create a git repo for that project, and add this repo to the root directory using:
 ```
 git submodule add https://github.com/AeronJJ/ST7789V2_Driver_STM32L4
 ```
-and add then add these lines in the following sections in ./CMakeLists.txt:
+Then add these lines in the following sections in ./CMakeLists.txt (Or use the project configuration in STM32Cube IDE software if so desired):
 target_link_directories:
 ```
     ST7789V2_Driver_STM32L4/Core/Inc/Src/LCD.c
@@ -23,6 +23,8 @@ target_include_directories:
 ```
     ${CMAKE_SOURCE_DIR}/ST7789V2_Driver_STM32L4/Core/Inc/
 ```
+
+You should then be good to go.
 
 ## Usage
 
