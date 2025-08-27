@@ -45,7 +45,7 @@ This struct is then passed around whenever a LCD function is called. For example
 
 Of course, the LCD must be initialised before use, so it it recommended to call the init function immediately after creating the struct.
 
-This library utilises a compact frame buffer that stores image data at 4 bits per pixel for a total of 16 colours. These colours can be changed by modifying the `#define LCD_COLOUR_n RGB565_c` lines in LCD.h with your desired colour palette. Functions that modify pixel data, such as `LCD_Set_Pixel()` or `LCD_Draw_Circle()`, write directly to the frame buffer, rather than to the LCD. To push these changes onto the LCD, you must call the `LCD_Refresh()' with the config struct of the desired LCD, such as `LCD_Refresh(&cfg0)`.
+This library utilises a compact frame buffer that stores image data at 4 bits per pixel for a total of 16 colours. These colours can be changed by modifying the `#define LCD_COLOUR_n RGB565_c` lines in LCD.h with your desired colour palette. Functions that modify pixel data, such as `LCD_Set_Pixel()` or `LCD_Draw_Circle()`, write directly to the frame buffer, rather than to the LCD. To push these changes onto the LCD, you must call the `LCD_Refresh()` with the config struct of the desired LCD, such as `LCD_Refresh(&cfg0)`.
 
 ## Optimisations
 There are a number of optimisations that have been utilised in order to achieve a reasonable refresh rate on the LCD. First of all is the use of DMA to transfer data over SPI, this allows the CPU to continue running the game while the LCD is being updated.
