@@ -3,8 +3,12 @@
 ## Requirements
  - stm32l476xx.h and all sub-dependencies
 
-## Usage
-If using STM32CubeMX to generate your project, add this repo to the root directory and add these lines in the following sections in ./CMakeLists.txt:
+## Setup
+If using STM32CubeMX to generate your project, add this repo to the root directory using:
+```
+git submodule add https://github.com/AeronJJ/ST7789V2_Driver_STM32L4
+```
+and add then add these lines in the following sections in ./CMakeLists.txt:
 target_link_directories:
 ```
     ST7789V2_Driver_STM32L4/Core/Inc/Src/LCD.c
@@ -19,6 +23,8 @@ target_include_directories:
 ```
     ${CMAKE_SOURCE_DIR}/ST7789V2_Driver_STM32L4/Core/Inc/
 ```
+
+## Usage
 
 Theoretically, this library supports any of the three SPI peripherals on the MCU potentially allowing multiple displays to be driven, however, the only one that has been tested is SPI2. Here is a table showing how the LCD should be connected for use of SPI2, and other recommended pins:
 
