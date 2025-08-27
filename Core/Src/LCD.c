@@ -106,10 +106,6 @@ void LCD_printChar(char const c, const uint16_t x, const uint16_t y, uint8_t col
   }
 }
 
-uint16_t LCD_Map_Pixel(uint8_t pixel) {
-    return colour_map[pixel];
-}
-
 void LCD_Set_Pixel(const uint16_t x, const uint16_t y, uint8_t colour) {
   track_changes[y] = 1;
   uint16_t index = (ST7789V2_WIDTH*y + x) / 2;
