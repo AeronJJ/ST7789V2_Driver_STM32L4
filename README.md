@@ -9,6 +9,7 @@ If you have used STM32CubeMX to generate a CMake project, create a git repo for 
 git submodule add https://github.com/AeronJJ/ST7789V2_Driver_STM32L4
 ```
 Then add these lines in the following sections in ./CMakeLists.txt (Or use the project configuration in STM32Cube IDE software if so desired):
+
 target_link_directories:
 ```
     ST7789V2_Driver_STM32L4/Core/Inc/Src/LCD.c
