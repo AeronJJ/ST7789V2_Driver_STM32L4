@@ -73,15 +73,18 @@ void LCD_inverseMode(ST7789V2_cfg_t* cfg);
 
 /* Print String
 *   Prints a string of characters to the screen buffer. String is cut-off after the 83rd pixel.
-*   @param x - the column number (0 to 83)
-*   @param y - the row number (0 to 5) - the display is split into 6 banks - each bank can be considered a row*/
+*   @param  x - the x position (top-left)
+*   @param  y - the y position (top-left)
+*   @param  colour - Value from 0-15 referring to the colour map colour
+*   @param  font_size - Value to scale up font by, 1 = 1x scale, 2 = 2x scale, 3 = 3x scale, etc...*/
 void LCD_printString(char const *str, const uint16_t x, const uint16_t y, uint8_t colour, uint8_t font_size);
 
 /* Print Character
 *   Sends a character to the screen buffer.  Printed at the specified location. Character is cut-off after the 83rd pixel.
 *   @param  c - the character to print. Can print ASCII as so printChar('C').
-*   @param x - the column number (0 to 83)
-*   @param y - the row number (0 to 5) - the display is split into 6 banks - each bank can be considered a row*/
+*   @param  x - the x position (top-left)
+*   @param  y - the y position (top-left)
+*   @param  colour - Value from 0-15 referring to the colour map colour*/
 void LCD_printChar(char const c, const uint16_t x, const uint16_t y, uint8_t colour);
 
 /* Set a Pixel
@@ -102,7 +105,7 @@ int getPixel(unsigned int const x, unsigned int const y);
 
 /* Refresh display
 *   This functions sends the screen buffer to the display.*/
-void LCD_refresh();
+void LCD_Refresh(ST7789V2_cfg_t* cfg);
 
 /* Randomise buffer
 *   This function fills the buffer with random data.  Can be used to test the display.
@@ -123,8 +126,9 @@ void LCD_plotArray(float const array[]);
 *   @param  x0     - x-coordinate of centre
 *   @param  y0     - y-coordinate of centre
 *   @param  radius - radius of circle in pixels
+*   @param  colour - Value from 0-15 referring to the colour map colour
 *   @param  fill   - fill-type for the shape*/
-void LCD_Draw_Circle(const uint16_t x0, const uint16_t y0, const uint16_t radius, uint8_t colour, uint8_t fill);
+void LCD_Draw_Circle(const uint16_t x0, const uint16_t y0, const uint16_t radius, const uint8_t colour, const uint8_t fill);
 
 /* Draw Line
 *   This function draws a line between the specified points using linear interpolation.
@@ -133,7 +137,7 @@ void LCD_Draw_Circle(const uint16_t x0, const uint16_t y0, const uint16_t radius
 *   @param  x1 - x-coordinate of last point
 *   @param  y1 - y-coordinate of last point
 *   @param  colour - 4-bit colour*/
-void LCD_Draw_Line(const uint16_t x0, const uint16_t y0, const uint16_t x1, const uint16_t y1, uint8_t colour);
+void LCD_Draw_Line(const uint16_t x0, const uint16_t y0, const uint16_t x1, const uint16_t y1, const uint8_t colour);
 
 /* Draw Rectangle
 *   This function draws a rectangle.
@@ -141,8 +145,9 @@ void LCD_Draw_Line(const uint16_t x0, const uint16_t y0, const uint16_t x1, cons
 *   @param  y0 - y-coordinate of origin (top-left)
 *   @param  width - width of rectangle
 *   @param  height - height of rectangle
+*   @param  colour - Value from 0-15 referring to the colour map colour
 *   @param  fill   - fill-type for the shape*/
-void LCD_Draw_Rect(const uint16_t x0, const uint16_t y0, const uint16_t width, const uint16_t height, uint8_t colour, uint8_t fill);
+void LCD_Draw_Rect(const uint16_t x0, const uint16_t y0, const uint16_t width, const uint16_t height, const uint8_t colour, const uint8_t fill);
 
 /* Draw Sprite
 *   This function draws a sprite as defined in a 2D array
@@ -151,30 +156,23 @@ void LCD_Draw_Rect(const uint16_t x0, const uint16_t y0, const uint16_t width, c
 *   @param  nrows - number of rows in sprite
 *   @param  ncols - number of columns in sprite
 *   @param  sprite - 2D array representing the sprite*/
-void LCD_Draw_Sprite(int x0, int y0, int nrows, int ncols, uint8_t *sprite);
+void LCD_Draw_Sprite(const uint16_t x0, const uint16_t y0, const uint16_t nrows, const uint16_t ncols, const uint8_t *sprite);
 
-void LCD_setXYAddress(unsigned int const x,
-                unsigned int const y);
-                
-void LCD_initSPI();
-void LCD_turnOn();
-void LCD_reset();
-void LCD_clearRAM();
-void LCD_sendCommand(unsigned char command);
-void LCD_sendData(unsigned char data);
+/* Fill Buffer
+*   This function fills the image buffer with the desired colour
+*   @param  colour - Value from 0-15 referring to the colour map colour*/
+void LCD_Fill_Buffer(const uint8_t colour);
 
-void LCD_Refresh(ST7789V2_cfg_t* cfg);
-// void LCD_Fill_Buffer(ST7789V2_cfg_t* cfg, uint16_t colour);
-void LCD_Fill_Buffer(uint8_t colour);
-
+/* Fill Screen
+*   This function directly writes to the LCD filling in a rectangle with a solid colour
+*   x0 must be < x1 and y0 must be < y1, function does no parameter checking
+*   @param  cfg - LCD Config struct
+*   @param  x0 - Start x-coordinate (top-left)
+*   @param  y0 - Start y-coordinate (top-left)
+*   @param  x1 - End x-coordinate (bottom-right)
+*   @param  y1 - End y-coordinate (bottom-right)
+*   @param  colour - Value from 0-15 referring to the colour map colour*/
 void LCD_Fill(ST7789V2_cfg_t* cfg, const uint16_t x0, const uint16_t y0, const uint16_t x1, const uint16_t y1, const uint16_t colour);
-
-void ST7789_Init(ST7789V2_cfg_t* cfg);
-void ST7789_SendLine_DMA(ST7789V2_cfg_t* cfg, uint16_t x, uint16_t y, uint16_t *data, uint16_t len);
-void ST7789_SendSolidLine_DMA(ST7789V2_cfg_t* cfg, uint16_t x, uint16_t y, uint16_t pixel, uint16_t len);
-
-void Print_SPI2_DMA_Registers(void);
-
 
 extern const unsigned char font5x7_[480];// = {
 //     0x00, 0x00, 0x00, 0x00, 0x00,// (space)

@@ -119,7 +119,7 @@ void LCD_Set_Pixel(const uint16_t x, const uint16_t y, uint8_t colour) {
   }
 }
 
-void LCD_Fill_Buffer(uint8_t colour) {
+void LCD_Fill_Buffer(const uint8_t colour) {
   for (int y = 0; y < ST7789V2_HEIGHT; y++) {
     track_changes[y] = 1;
   }
@@ -176,7 +176,7 @@ void LCD_Refresh(ST7789V2_cfg_t* cfg) {
   }
 }
 
-void LCD_Draw_Circle(const uint16_t x0, const uint16_t y0, const uint16_t radius, uint8_t colour, uint8_t fill){
+void LCD_Draw_Circle(const uint16_t x0, const uint16_t y0, const uint16_t radius, const uint8_t colour, const uint8_t fill){
 
   // from http://en.wikipedia.org/wiki/Midpoint_circle_algorithm
   int x = radius;
@@ -215,7 +215,7 @@ void LCD_Draw_Circle(const uint16_t x0, const uint16_t y0, const uint16_t radius
   }
 }
 
-void LCD_Draw_Line(const uint16_t x0, const uint16_t y0, const uint16_t x1, const uint16_t y1, uint8_t colour) {
+void LCD_Draw_Line(const uint16_t x0, const uint16_t y0, const uint16_t x1, const uint16_t y1, const uint8_t colour) {
   // Note that the ranges can be negative so we have to turn the input values into signed integers first
   const int16_t y_range = (int)y1 - (int)y0;
   const int16_t x_range = (int)x1 - (int)x0;;
@@ -257,7 +257,7 @@ void LCD_Draw_Line(const uint16_t x0, const uint16_t y0, const uint16_t x1, cons
   }
 }
 
-void LCD_Draw_Rect(const uint16_t x0, const uint16_t y0, const uint16_t width, const uint16_t height, uint8_t colour, uint8_t fill) {
+void LCD_Draw_Rect(const uint16_t x0, const uint16_t y0, const uint16_t width, const uint16_t height, const uint8_t colour, const uint8_t fill) {
     if (fill) {
         for (int y = y0; y<y0+height; y++) {
             LCD_Draw_Line(x0, y, x0+(width-1), y, colour);
@@ -271,7 +271,7 @@ void LCD_Draw_Rect(const uint16_t x0, const uint16_t y0, const uint16_t width, c
     }
 }
 
-void LCD_Draw_Sprite(int x0, int y0, int nrows, int ncols, uint8_t *sprite){
+void LCD_Draw_Sprite(const uint16_t x0, const uint16_t y0, const uint16_t nrows, const uint16_t ncols, const uint8_t *sprite){
   for (int i = 0; i < nrows; i++) {
     for (int j = 0 ; j < ncols ; j++) {
       int pixel = *((sprite+i*ncols)+j);
