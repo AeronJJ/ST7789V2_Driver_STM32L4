@@ -148,8 +148,8 @@ void LCD_Refresh(ST7789V2_cfg_t* cfg) {
       track_changes[2*i] = 0;
       for (int j = 0; j < 120*lines_per_buffer; j++) {
         uint8_t double_pixel = image_buffer[120 * (2*i*lines_per_buffer) + j];
-        line_buffer0[2*j] = colour_map[double_pixel >> 4];
-        line_buffer0[2*j+1] = colour_map[double_pixel & 0x0F];
+        line_buffer0[2*j] = colour_map[double_pixel & 0x0F];
+        line_buffer0[2*j+1] = colour_map[double_pixel >> 4];
       }
       
       ST7789V2_Set_Address_Window(cfg, 0, 20 + 2*i, 239, 20 + 2*i); 
@@ -166,8 +166,8 @@ void LCD_Refresh(ST7789V2_cfg_t* cfg) {
       track_changes[2*i + 1] = 0;
       for (int j = 0; j < (int)(120*lines_per_buffer); j++) {
         uint8_t double_pixel = image_buffer[120 * (2*i*lines_per_buffer+1) + j];
-        line_buffer1[2*j] = colour_map[double_pixel >> 4];
-        line_buffer1[2*j+1] = colour_map[double_pixel & 0x0F];
+        line_buffer1[2*j] = colour_map[double_pixel & 0x0F];
+        line_buffer1[2*j+1] = colour_map[double_pixel >> 4];
       }
       ST7789V2_Set_Address_Window(cfg, 0, 20 + (2*i+1), 239, 20 + (2*i+1)); 
       ST7789V2_Send_Command(cfg, 0x2C);
